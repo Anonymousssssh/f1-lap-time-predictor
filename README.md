@@ -1,4 +1,4 @@
-#F1 LAP TIME PREDICTOR
+# F1 LAP TIME PREDICTOR
 ## Overview
 This project predicts the F1 race lap times using tire age, testing whether tire degradation information actually helps to improve prediction over a simple baseline .I also explored two additional engineered features beyond the minimum requirement , and ran into an interesting modeling issue along the way that i think is worth documenting honestly. 
 ## Race Selection
@@ -18,7 +18,7 @@ I removed two types of laps that would distort the analysis:
   So, Final dataset: 534 clean laps across 8 drivers.
 ## Feature Engineering
 - **tire_age** — counts how many laps a driver has done since last pit stop like 1,2,.. ,resetting to 
-  0 each time they pit. This is meant to capture tier wear: the higher the number ,the more worn the tires ,and the slower the car should be.  
+  0 each time they pit. This is meant to capture tire wear: the higher the number ,the more worn the tires ,and the slower the car should be.  
 - **tire_age_squared** — I added this because tire degradation is not 
   necessarily a straight line; tires often wear faster later in a stint than 
   early on. This feature is calculated for every for every laps (not just later ones), giving the model both a linear and non-linear representation of tire age lets it learn whether degradation accelerates over time, without me having to hardcode when that acceleration starts.
@@ -80,8 +80,35 @@ on features independently rather than solving a linear equation. So for my
 final comparison, I removed *tire_age²* specifically from Linear Regression's 
 feature set (keeping just tire_age) while retaining it for Random Forest. 
 This isn't cherry-picking the features that make each model look best, it's 
-a intentional choice based on a real property of how each algorithm handles 
+an intentional choice based on a real property of how each algorithm handles 
 correlated inputs, and I think it's a more interesting finding than a clean 
 *"tires improved everything"* result would have been: it suggests the 
 tire degradation relationship is genuinely non-linear enough that only a 
 flexible model benefits from capturing it.
+
+## Visualization
+`stint_plot(1).png` shows predicted vs. actual lap times for Driver 844's final 
+stint (42 laps — the longest final stint in the dataset, giving the clearest 
+view of the trend).
+
+![Predicted vs Actual Lap Times](stint_plot(1).png)
+
+-The model tracks the overall degradation trend reasonably well, but doesn't 
+chase the sharp lap-to-lap swings visible in the actual data (some laps jump 
+by 500-1000ms). I don't think this is a flaw; none of my features 
+(tire age,tire age^2, fuel proxy, grid, lap) could explain sudden swings like getting 
+stuck behind traffic, a small driving error, or defending against another 
+car, or a aggressive driving strategy.
+-The gap between predicted and actual here is itself informative: it roughly 
+shows how much of lap-time variation is explained by tires/fuel versus 
+everything else happening on track.
+
+## Limitations & Future Work
+- Driver 830's final stint was only 2 laps — with such a small number of laps, a single unusually fast or slow lap could affect the error metric heavily, making     it unreliable to judge how well the model actually predicted that specific driver.
+- Driving style likely affects tire degradation rate (more aggressive 
+  driving/sliding should wear tires faster), but this dataset has no 
+  telemetry to measure that directly, so I couldn't test it.
+- With more time, I'd want to run proper cross-validation for more rigorous 
+  tuning, and check whether these findings hold across multiple races 
+  rather than just one.
+- The model can't capture lap to lap noise from traffic, small errors, or race incidents — these aren't in the dataset's features, so it reflects average tire/fuel effects rather than specific race events (refer Visualization).  
