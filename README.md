@@ -72,12 +72,12 @@ enhanced RMSE dropped from 1215 to 954, about a 21% improvement which i think is
 first included tire_age² in Linear Regression, its RMSE actually got *worse* 
 (1089 vs. 906 baseline).
 
-  Investigating and researching this, I identified the likely cause as **multicollinearity**: 
+-Investigating and researching this, I identified the likely cause as **multicollinearity**: 
 tire_age and tire_age² are mathematically derived from each other, and 
 linear models can struggle to assign stable coefficients to two highly 
 correlated inputs. Random Forest doesn't have this problem, since it splits 
-on features independently rather than solving a linear equation. So for my 
-final comparison, I removed *tire_age²* specifically from Linear Regression's 
+on features independently rather than solving a linear equation. 
+-So for my final comparison, I removed *tire_age²* specifically from Linear Regression's 
 feature set (keeping just tire_age) while retaining it for Random Forest. 
 This isn't cherry-picking the features that make each model look best, it's 
 an intentional choice based on a real property of how each algorithm handles 
@@ -85,6 +85,7 @@ correlated inputs, and I think it's a more interesting finding than a clean
 *"tires improved everything"* result would have been: it suggests the 
 tire degradation relationship is genuinely non-linear enough that only a 
 flexible model benefits from capturing it.
+-Even with just tire_age alone (no squared term), Linear Regression barely improved over its baseline (905.3 vs. 906.0) — reinforcing that this simple model isn't well-suited to capturing tire degradation's effect, regardless of which tire related features are included.
 
 ## Visualization
 `stint_plot(1).png` shows predicted vs. actual lap times for Driver 844's final 
